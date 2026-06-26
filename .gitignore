@@ -1,5 +1,4 @@
-# Senhas e Variáveis de Ambiente
-.env
+
 
 # Banco Vetorial (Ignorar o banco de dados pesado)
 chroma_data/
