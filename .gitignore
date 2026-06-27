@@ -1,9 +1,3 @@
-
-
-# Banco Vetorial (Ignorar o banco de dados pesado)
+.env
 chroma_data/
-
-# Pastas temporárias e cache do Python
-uploads/
 __pycache__/
-*.pyc

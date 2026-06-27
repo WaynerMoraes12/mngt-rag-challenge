@@ -1,43 +1,27 @@
-import re
 import pdfplumber
-from typing import List, Dict, Any
+import re
 
-def extract_text_from_pdf(file_path: str) -> str:
+def process_contract(file_path: str) -> list[str]:
     full_text = ""
+    
     with pdfplumber.open(file_path) as pdf:
         for page in pdf.pages:
-            extracted = page.extract_text()
-            if extracted:
-                full_text += extracted + "\n"
-    return full_text
-
-def chunk_text_by_clause(text: str) -> List[Dict[str, Any]]:
-    pattern = re.compile(r'(?i)(CL[ÁA]USULA\s+.*?)(?=CL[ÁA]USULA\s+|$)', re.DOTALL)
-    matches = pattern.findall(text)
+            text = page.extract_text()
+            if text:
+                full_text += text + "\n"
     
-    chunks = []
-    for index, match in enumerate(matches):
-        clean_text = match.strip()
-        if clean_text:
-            chunks.append({
-                "chunk_index": index + 1,
-                "text": clean_text,
-                "word_count": len(clean_text.split())
-            })
-    return chunks
-
-def process_contract(file_path: str) -> List[Dict[str, Any]]:
-    raw_text = extract_text_from_pdf(file_path)
-    clauses = chunk_text_by_clause(raw_text)
-    return clauses
-
-if __name__ == "__main__":
-    arquivo_teste = "contrato.pdf"
+    full_text = full_text.strip()
     
-    try:
-        resultado = process_contract(arquivo_teste)
-        for chunk in resultado:
-            print(f"--- Cláusula {chunk['chunk_index']} ({chunk['word_count']} palavras) ---")
-            print(chunk['text'][:150] + "...\n")
-    except FileNotFoundError:
-        pass
+    if not full_text:
+        return []
+
+    if "CLÁUSULA" in full_text.upper():
+        raw_chunks = re.split(r'(?i)(?=CLÁUSULA)', full_text)
+        return [c.strip() for c in raw_chunks if c.strip()]
+    
+    paragraphs = re.split(r'\n\s*\n', full_text)
+    if len(paragraphs) > 1:
+        return [p.strip() for p in paragraphs if p.strip()]
+    
+    lines = full_text.split('\n')
+    return [line.strip() for line in lines if line.strip()]

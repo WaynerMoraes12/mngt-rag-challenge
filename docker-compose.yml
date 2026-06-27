@@ -1,0 +1,37 @@
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - mngt_chroma_volume:/app/chroma_data
+      - mngt_uploads_volume:/app/uploads
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 10s
+      retries: 5
+      start_period: 90s
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  mngt_chroma_volume:
+    name: mngt_rag_database
+  mngt_uploads_volume:
+    name: mngt_rag_uploads
