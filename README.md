@@ -33,12 +33,17 @@ Edite o arquivo `.env` e adicione sua chave:
 GEMINI_API_KEY=sua_chave_aqui
 ```
 
-**3. Suba o sistema completo**
+**3. Suba o sistema completo em segundo plano**
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
-Na primeira execução o backend baixa o modelo de embeddings (~400MB). O frontend só inicializa após o backend estar saudável — aguarde o log de confirmação da API.
+Na primeira execução o backend baixa o modelo de embeddings (~400MB). O frontend só inicializa após o backend estar saudável — isso é gerenciado automaticamente pelo healthcheck no compose.
+
+Para acompanhar os logs enquanto os containers sobem:
+```bash
+docker compose logs -f
+```
 
 **4. Acesse**
 
@@ -61,12 +66,10 @@ Na primeira execução o backend baixa o modelo de embeddings (~400MB). O fronte
 
 ## Testes
 
-```bash
-# Instale as dependências localmente
-pip install -r requirements.txt
+Com o sistema rodando via Docker, execute os testes diretamente no container do backend:
 
-# Execute os testes
-pytest test_main.py -v
+```bash
+docker compose exec backend pytest -v
 ```
 
 Os testes cobrem: listagem de contratos, rejeição de arquivos não-PDF, fluxo completo de upload e exclusão com mocks, e validação de payload inválido.
